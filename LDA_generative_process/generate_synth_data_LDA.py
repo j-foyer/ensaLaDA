@@ -9,7 +9,6 @@ Created on Thu Jan 28 18:03:37 2021
 import argparse
 import random
 import numpy as np
-import scipy.stats
 
 def main():
     parser = argparse.ArgumentParser()
@@ -34,7 +33,6 @@ def main():
     args = parser.parse_args()
       
     # Read the file containing words, separate into words in a list.
-    # The words_alpha.txt file contains 370103 words in total. Keep only 10,000 random words.
     words_list = []
     with open("words_alpha.txt", 'r') as file:
         for line in file:
@@ -42,52 +40,47 @@ def main():
             words_list.append(line)
     words_list = random.sample(words_list, args.words)
     
-    # Prepare a file for the documents and a file for metadata.    
+    # Prepare a file for the documents. 
     D = open('corpus.txt', 'w')
-    metafile = open('metainformation.txt', 'w')
     
     # Chose number of documents (M), number of topics (K), and number of words for each document (N).
     M = args.documents
     K = args.topics
     N = np.random.randint(100, 200, size = M)
+    W = len(words_list)
     
-    # Create the alpha parameter vector. Each column is a topic. Dimensions 1 x K.
+    # Create the alpha parameter vector. Dimensions 1 x K.
     alpha = args.alpha * np.ones(K)
     
-    # Create the beta parameter vector. Each column is a word. Dimensions 1 x len(words_list).
-    beta = args.beta * np.ones(len(words_list))
+    # Create the beta parameter vector. Dimensions 1 x W.
+    beta = args.beta * np.ones(W)
     
     # For each document, chose theta. Dimensions M x K.
-    theta = np.random.dirichlet(alpha, size = K)
-       
-    # For each document, chose phi. Dimensions M x W.
-    phi = np.random.dirichlet(beta, size = M)
-      
-    # Inte klar. For each word position in each document, chose a topic (z).
-    topic_dict = {}
+    theta = np.random.dirichlet(alpha, size = M)
     
-    # Inte klar. For each word position in each document, chose a word (w).
+    # For each topic, chose phi. Dimensions K x W.
+    phi = np.random.dirichlet(beta, size = K)
+      
+    # For each word position (j) in each document (i), chose a topic (z) and a word (w).
+    topic_dict = {}
     i = 0
     while i < M:
+        topic_dict[i] = []
         j = 0
         while j < N[i]:
-            w = scipy.stats.multinomial()
-            D.write(str(w))
+            z_array = np.random.multinomial(1, theta[i])
+            z_lst = z_array.tolist()
+            z = z_lst.index(1)
+            topic_dict[i].append(z)
+            w_array = np.random.multinomial(1, phi[z])
+            w_lst = w_array.tolist()
+            w_ind = w_lst.index(1)
+            w = words_list[w_ind]
+            D.write(w)
             D.write(" ")
             j += 1
         D.write("\n")
         i += 1
-        
     
-    
-        
-        
- #       N = random.randint(500, 800)
- #       for position in range(0, N):
- #           z = scipy.stats.multinomial(1, theta)
- #           metafile.write('{}\n'.format(z))
- #           w = scipy.stats.multinomial(1, phi)
-#            D.write('{} ').format(w)
-
 if __name__ == '__main__':
     main()
