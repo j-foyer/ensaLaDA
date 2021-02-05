@@ -1,1 +1,3 @@
-This script is not completed.
+This script can now generate data according to the LDA generative process.
+The output file is called corpus.txt. Each word is seperated by " " and each document is seperated by "\n".
+Parameters such as theta and phi, as well as information on topic for each word positions, are only stored in the script and are not saved to an output.
