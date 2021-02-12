@@ -13,7 +13,6 @@ import numpy as np
 def main():
     parser = argparse.ArgumentParser()
     add_arg = parser.add_argument
-
     
     add_arg("-a", "--alpha", type = float, default = 0.1,
             help = "Specify alpha as scalar. If not specified alpha is 0.1.")
@@ -40,7 +39,7 @@ def main():
             words_list.append(line)
     words_list = random.sample(words_list, args.words)
     
-    # Prepare a file for the documents. 
+    # Prepare a file for the documents.
     D = open('corpus.txt', 'w')
     
     # Chose number of documents (M), number of topics (K), and number of words for each document (N).
@@ -63,24 +62,27 @@ def main():
       
     # For each word position (j) in each document (i), chose a topic (z) and a word (w).
     topic_dict = {}
-    i = 0
-    while i < M:
-        topic_dict[i] = []
-        j = 0
-        while j < N[i]:
-            z_array = np.random.multinomial(1, theta[i])
-            z_lst = z_array.tolist()
-            z = z_lst.index(1)
-            topic_dict[i].append(z)
-            w_array = np.random.multinomial(1, phi[z])
-            w_lst = w_array.tolist()
-            w_ind = w_lst.index(1)
+    theta_dict = {}
+    phi_dict = {}
+    for document in range(M):
+        topic_dict[document] = []
+        theta_dict[document] = theta[document]
+        phi_dict[document] = {}
+        for position in range(N[document]):
+            z_array = np.random.multinomial(1, theta_dict[document])
+            z = np.argmax(z_array)
+            topic_dict[document].append(z)
+            phi_dict[document][position] = phi[z]
+            w_array = np.random.multinomial(1, phi_dict[document][position])
+            w_ind = np.argmax(w_array)
             w = words_list[w_ind]
             D.write(w)
             D.write(" ")
-            j += 1
         D.write("\n")
-        i += 1
+      
+    # Save all theta and phi values.
+    np.savez('theta.npz', theta_dict)
+    np.savez('phi.npz', phi_dict)
     
 if __name__ == '__main__':
     main()
