@@ -1,7 +1,6 @@
+import sys
 import numpy as np
 
-arrays = np.load('theta.npz')
+f = np.load(sys.argv[1])
 
-h = arrays['arr_0']
-
-print(h)
+print(f)
