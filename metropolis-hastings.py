@@ -11,6 +11,7 @@ import scanpy as sc
 import anndata as an
 import scipy.stats as st
 from scipy.spatial import KDTree
+import math
 
 # Load/create data
 def LoadData(path):
@@ -55,38 +56,64 @@ def KNN_indx_to_barcode(indx):
         index += 1
     return np.array(KNN_ids, dtype=object)
 
-def A_prob(neighbours, theta0, theta1): # This is not done...
-    a = 1
-    for spot in neighbours[1:]:
-        edge_influence = 2 # Arbitrarily picked for now
-        distance = # I need to calculate distances between theta0 and theta1
-        potential = st.expon(edge_influence * distance)
-        a *= potential
-    return a
+#def A_prob(neighbours, theta0, theta1): # This is not done...
+  #  a = 1
+  #  for spot in neighbours[1:]:
+  #      edge_influence = 2 # Arbitrarily picked for now
+  #      distance = # I need to calculate distances between theta0 and theta1
+  #      potential = edge_influence * distance
+  #      a *= potential
+  #  a = exp(a)
+  #  return a
 
-def metr_hast(adata, K):
+def Bhatt_coeff(p, q, X):
+    BC = 0
+    for x in X:
+        BC += math.sqrt(p[x]*q[x])
+    return BC
+
+def metr_hast(adata, K, iter):
     # Prepare proposal distribution    
-    dist_g = lambda x : st.dirichlet(x)
+    dist_g = lambda x: np.random.dirichlet(x)
     
     # Prepare acceptance probability
-    a_prob = lambda neighbours, 
+    DB = lambda p, q, X: - math.log(Bhatt_coeff(p, q, X))
+    lambda_a = 0.01
+    lambda_b = 0.01
+    E = 3798*5/2
+    edge_influence = 2 
+    shape = lambda_a + E
+    scale = lambda_b + edge_influence*E
+    lambda_parameter = np.random.gamma(shape, scale, 1)
+    edge_influence = lambda p, q, X : 1 / (np.random.exponential(lambda_parameter + DB(p, q, X)))
+    edge_potential = lambda p, q, X : math.exp(- edge_influence(p, q, X) * DB(p, q, X))
+    
     
     # Initial guess
     alpha = 0.1 * np.ones(K)
-    theta0 = dist_g2(alpha)
-    print(theta0)  # Why does it look like this when I print?
+    print(alpha)
+    theta0 = dist_g(alpha)
+    print(theta0)
+    
+    # Prepare matrix to hold theta. Dim M x K
+    spots = adata.n_obs
+    M = spots
+    theta = np.zeros((M, K))
     
     # Metropolis-Hastings sampling
-    spots = adata.n_obs
-    theta = theta0
+    theta[0] = theta0
+    print(theta0)
     for spot in range(spots):
-        for it in range(10): # "Run 10 metropolis steps per document"
-            theta1 = dist_g(theta0)
-            a = 
+        print(spot)
+        for it in range(iter): # "Run 10 metropolis steps per document" We will probably need more.
+            print(theta0)
+            theta1 = dist_g(theta0) # This leads to several 0s, giving problems next round. Use a new alpha instead.
+            print(theta1)
+   #         a = 
             a = min(1, 0.5) # 0.5 should be a
-            if np.random.random < a:
+            if np.random.random() < a:
                 theta0 = theta1
-        theta = np.vstack ((theta, theta0))
+        theta[spot] = theta0
 
 # Other parameters - honestly I can't remeber anymore why I started doing this. Maybe because they will be needed later for Gibbs sampling.
 def Gibbs():
@@ -115,4 +142,4 @@ print("KNN_ids[4]:   ", KNN_ids[4])
 print(dist.shape)
 print(dist_ub.shape)
 print(dist_sel.shape) # Is this because length of rows now differ?
-theta = metr_hast(adata, K)
+theta = metr_hast(adata, K, 50)
