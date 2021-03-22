@@ -92,7 +92,7 @@ def metr_hast(adata, K, iter):
     # Initial guess
     alpha = 0.1 * np.ones(K)
     print(alpha)
-    theta0 = dist_g(alpha)
+    theta0 = dist_g(alpha) # But I need a theta0 per spot, right?
     print(theta0)
     
     # Prepare matrix to hold theta. Dim M x K
@@ -115,15 +115,12 @@ def metr_hast(adata, K, iter):
                 theta0 = theta1
         theta[spot] = theta0
 
-# Other parameters - honestly I can't remeber anymore why I started doing this. Maybe because they will be needed later for Gibbs sampling.
+def assign_random(adata):
+    
+
+
 def Gibbs():
-    lambda_a = 0.01
-    lambda_b = 0.01
-    E = 3798*5/2
-    edge_influence = 2 
-    shape = lambda_a + E
-    scale = lambda_b + edge_influence*E
-    lambda_parameter = np.random.gamma(shape, scale, 1)        
+     
 
 # Main
 path ="/Users/juliafoyer/Documents/Skolarbete/Masters_thesis/human_breast_cancer_ST_data"
