@@ -156,7 +156,7 @@ def main():
         # phi_dict[document] = np.empty((0,W), float)
         for n in range(N[s]):
             z = np.argmax(np.random.multinomial(1,theta[s,:]))
-            w = np.argmax(np.random.multinomial(1,phi[:,z]))
+            w = np.argmax(np.random.multinomial(1,phi[z,:]))
             counts[s,w] += 1
 
 
